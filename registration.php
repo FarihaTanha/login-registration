@@ -12,16 +12,28 @@ if (isset($_SESSION["user"])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Form</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container card">
+        <!-- // logo section -->
+        <div class="d-flex justify-content-center justify-items-center w-50 m-auto">
+            <a href="index.php">
+            <img src="assets/images/logo.png" alt="logo" class="img-fluid">
+            </a>
+        </div>
+        
         <?php
         if (isset($_POST["submit"])) {
             $fullName = $_POST["fullname"];
             $email = $_POST["email"];
             $password = $_POST["password"];
             $passwordRepeat = $_POST["repeat_password"];
+            $username = $_POST["username"];
+            $nid = $_POST["nid_card"];
+            $phone = $_POST["mobile"];
+            $role = "user";
+            $avatar = "default.png";
 
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
@@ -41,47 +53,65 @@ if (isset($_SESSION["user"])) {
 
                
                require_once "database.php";
-               $sql = "SELECT * FROM users WHERE email = '$email'";
+               $sql = "SELECT * FROM users WHERE email = '$email' OR username = '$username' OR nid_card = '$nid' OR phone_number = '$phone'";
                $result = mysqli_query($conn, $sql);
                $rowCount = mysqli_num_rows($result);
                if ($rowCount>0) {
-                array_push($errors,"Email already exists!");
+                array_push($errors,"User Already Exists with this email or username or nid or phone number");
                }
+
+
                if (count($errors)>0) {
                 foreach ($errors as  $error) {
-                    echo "<div class='alert alert-danger'>$error</div>";
+                    echo "<div class='alert alert-danger mt-2'>$error</div>";
                 }
                }else{
                 
                 
-                $sql = "INSERT INTO users (full_name, email, password) VALUES ( ?, ?, ? )";
+                $sql = "INSERT INTO users (name, email, password, username, role, nid_card, phone_number, avatar) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = mysqli_stmt_init($conn);
                 $prepareStmt = mysqli_stmt_prepare($stmt,$sql);
                 if ($prepareStmt) {
-                    mysqli_stmt_bind_param($stmt,"sss",$fullName, $email, $passwordHash);
+                    mysqli_stmt_bind_param($stmt,"ssssssss",$fullName, $email, $passwordHash, $username, $role, $nid, $phone, $avatar);
                     mysqli_stmt_execute($stmt);
-                    echo "<div class='alert alert-success'>You are registered successfully.</div>";
+                    echo "<div class='alert alert-success mt-2'>You are registered successfully.</div>";
                 }else{
                     die("Something went wrong");
                 }    
                } 
         }       
         ?>
-        <form action="registration.php" method="post">
+        <form action="registration.php" method="post" class="mt-4">
             <div class="form-group">
-                <input type="text" class="form-control" name="fullname" placeholder="Full Name:">
+                <label for="fullname">Full Name:</label>
+                <input type="text" class="form-control" name="fullname" placeholder="John Doe" required>
             </div>
             <div class="form-group">
-                <input type="emamil" class="form-control" name="email" placeholder="Email:">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" name="email" placeholder="johndoe@example.com" required>
             </div>
             <div class="form-group">
-                <input type="password" class="form-control" name="password" placeholder="Password:">
+                <label for="email">Username:</label>
+                <input type="text" class="form-control" name="username" placeholder="johndoe" required>
             </div>
             <div class="form-group">
-                <input type="password" class="form-control" name="repeat_password" placeholder="Repeat Password:">
+                <label for="mobile">Mobile Phone:</label>
+                <input type="tel" class="form-control" name="mobile" placeholder="01900000000" required onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxlength="11">
+            </div>
+            <div class="form-group">
+                <label for="email">NID Card Number:</label>
+                <input type="text" class="form-control" name="nid_card" placeholder="1971XXXXXXXXXXXXX" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" name="password" placeholder="***********" required>
+            </div>
+            <div class="form-group">
+                <label for="repeat_password">Repeat Password:</label>
+                <input type="password" class="form-control" name="repeat_password" placeholder="***********" required>
             </div>
             <div class="form-btn">
-                <input type="submit" class="btn btn-primary" value="Register" name="submit">
+                <input type="submit" class="btn" style="background-color:#9d0858;color:#ffffff" value="Register" name="submit">
             </div>
         </form>
     </div>
